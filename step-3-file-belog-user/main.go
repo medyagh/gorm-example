@@ -118,20 +118,22 @@ func main() {
 
 }
 
+/// DOESNT WORK
 func getUserRelatedToFile(db *gorm.DB, filename string) {
-	fmt.Println("Getting Users Related File  ", filename)
+	fmt.Println("--- DOESNT WORK YET -----")
+	fmt.Println("Getting Users Related File   ", filename)
 	var f File
 	var us []*User
-	db.First(&f, "id = ?", 1)
+	db.First(&f, "Name = ?", "Fname1")
 	fmt.Println("/////////////////////")
 	fmt.Printf("f %v", f.Name)
 	fmt.Println("/////////////////////")
-	db.Model(&f).Related(&us, "Files")
+	db.Model(&f).Related(&us, "Users")
 	fmt.Println(len(us))
 	for _, e := range us {
 		fmt.Println(e.ID, e.Name)
 	}
-
+	fmt.Println("---END OF DOESNT WORK YET -----")
 }
 
 func filesReslatedToUser(db *gorm.DB, name string) {
