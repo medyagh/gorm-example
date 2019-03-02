@@ -12,8 +12,7 @@ type User struct {
 	Name     string
 	NickName string `gorm:"default:'dummy'"`
 	LastName string
-	File     File
-	FileID   int
+	Files    []*File `gorm:"many2many:user_file;"`
 }
 
 // `File` belongs to `User`, `UserID` is the foreign key
@@ -22,6 +21,8 @@ type File struct {
 	Name   string
 	Md5    string
 	Format string `gorm:"default:'mp4'"`
+	UserId uint
+	Users  []*User `gorm:"many2many:user_file;"`
 }
 
 func main() {
@@ -63,7 +64,7 @@ func main() {
 	}
 
 	f2 := File{
-		Name:   "Filename2",
+		Name:   "Fname2",
 		Md5:    "1121212121s",
 		Format: "mp4",
 	}
@@ -103,21 +104,56 @@ func main() {
 
 	db.First(&u3, "Name = ?", "med3")
 
-	u1.File = f1
-	u2.File = f2
+	u2.Files = append(u2.Files, &f1, &f2)
 
 	db.Save(&u1)
 	db.Save(&u2)
 
-	var uu User
-	var ff File
-	db.First(&ff, "Name= ?", "Fname1")
-	db.Model(&uu).Related(&ff)
-	fmt.Printf("=============FILE RELATED TO u2 %s %d===================\n", u2.Name, u2.ID)
-	fmt.Printf("Name %s format %s fid %d md5 %s ", ff.Name, ff.Format, ff.ID, ff.Md5)
+	db.First(&u2, "Name = ?", "med2")
+	prinUser(u2)
+
+	getUserRelatedToFile(db, "Filename2")
+
+	filesReslatedToUser(db, "med2")
+
+}
+
+func getUserRelatedToFile(db *gorm.DB, filename string) {
+	fmt.Println("Getting Users Related File  ", filename)
+	var f File
+	var us []*User
+	db.First(&f, "id = ?", 1)
+	fmt.Println("/////////////////////")
+	fmt.Printf("f %v", f.Name)
+	fmt.Println("/////////////////////")
+	db.Model(&f).Related(&us, "Files")
+	fmt.Println(len(us))
+	for _, e := range us {
+		fmt.Println(e.ID, e.Name)
+	}
+
+}
+
+func filesReslatedToUser(db *gorm.DB, name string) {
+	fmt.Println("Getting File Related To User  ", name)
+
+	var fs []*File
+	var u User
+	db.First(&u, "Name = ?", name)
+	fmt.Println("/////////////////////")
+	db.Model(&u).Related(&fs, "Files")
+	fmt.Println(len(fs))
+	for _, e := range fs {
+		fmt.Println(e.ID, e.Name)
+	}
 
 }
 
 func prinUser(u User) {
-	fmt.Printf("ID: %d  Name:%s %s (%s)", u.ID, u.Name, u.LastName, u.NickName)
+	fmt.Println("********************")
+	fmt.Printf("ID: %d  Name:%s %s (%s) \n", u.ID, u.Name, u.LastName, u.NickName)
+	for _, m := range u.Files {
+		fmt.Printf("\t Name %s format %s fid %d md5 %s\n ", m.Name, m.Format, m.ID, m.Md5)
+	}
+	fmt.Println("********************")
 }
