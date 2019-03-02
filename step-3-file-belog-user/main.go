@@ -70,7 +70,7 @@ func main() {
 	}
 
 	fx := File{
-		Name:   "Very Important File",
+		Name:   "fx",
 		Md5:    "dfsgdsgdfgdf",
 		Format: "mp4",
 	}
@@ -98,21 +98,21 @@ func main() {
 	}
 	fmt.Println("================================")
 
+	// TODO check if it will work without RE-FETCHING
 	db.First(&u1, "Name = ?", "med1")
-
 	db.First(&u2, "Name = ?", "med2")
-
 	db.First(&u3, "Name = ?", "med3")
-
 	u2.Files = append(u2.Files, &f1, &f2)
+	u3.Files = append(u3.Files, &fx)
 
 	db.Save(&u1)
 	db.Save(&u2)
+	db.Save(&u3)
 
-	db.First(&u2, "Name = ?", "med2")
-	prinUser(u2)
+	fmt.Println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
 
-	getUserRelatedToFile(db, "Filename2")
+	// getUserRelatedToFile(db, "Filename2")
+	getUserRelatedToFile(db, "fx")
 
 	filesReslatedToUser(db, "med2")
 
@@ -120,11 +120,10 @@ func main() {
 
 /// DOESNT WORK
 func getUserRelatedToFile(db *gorm.DB, filename string) {
-	fmt.Println("--- DOESNT WORK YET -----")
 	fmt.Println("Getting Users Related File   ", filename)
 	var f File
 	var us []*User
-	db.First(&f, "Name = ?", "Fname1")
+	db.First(&f, "Name = ?", filename)
 	fmt.Println("/////////////////////")
 	fmt.Printf("f %v", f.Name)
 	fmt.Println("/////////////////////")
@@ -133,7 +132,6 @@ func getUserRelatedToFile(db *gorm.DB, filename string) {
 	for _, e := range us {
 		fmt.Println(e.ID, e.Name)
 	}
-	fmt.Println("---END OF DOESNT WORK YET -----")
 }
 
 func filesReslatedToUser(db *gorm.DB, name string) {
@@ -152,10 +150,9 @@ func filesReslatedToUser(db *gorm.DB, name string) {
 }
 
 func prinUser(u User) {
-	fmt.Println("********************")
 	fmt.Printf("ID: %d  Name:%s %s (%s) \n", u.ID, u.Name, u.LastName, u.NickName)
 	for _, m := range u.Files {
-		fmt.Printf("\t Name %s format %s fid %d md5 %s\n ", m.Name, m.Format, m.ID, m.Md5)
+		fmt.Printf("\t Name %s format %s FID %d \n ", m.Name, m.Format, m.ID)
 	}
 	fmt.Println("********************")
 }
